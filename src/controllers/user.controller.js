@@ -6,13 +6,14 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 
 const registerUser = asyncHandler(async (req, res) => {
   // get the input info via frontend- name, gmail, password,  username, avatar, cover image
-  const { fullname, email, username, password } = req.body;
-  console.log("email: ", email);
+  const { fullname, username, email, password } = req.body;
 
   // validate the data sent from frontend
   // usually in production grade code these validations are in a single separate file
   if (
-    [fullname, email, username, password].some((field) => field?.trim() === "")
+    [fullname, email, username, password].some((field) => {
+      if (field === "" || field === undefined || field === null) return 1;
+    })
   ) {
     throw new ApiError(400, "All fields are required!");
   }
@@ -29,18 +30,34 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // check if cover image sent, check for avatar
-  const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  let avatarLocalPathTemp = null;
+  if (
+    req.files &&
+    Array.isArray(req.files.avatar) &&
+    req.files.avatar.length > 0
+  ) {
+    avatarLocalPathTemp = req.files.avatar[0].path;
+  }
+  const avatarLocalPath = avatarLocalPathTemp;
   if (!avatarLocalPath) {
     throw new ApiError(400, "Avatar file is required");
   }
 
+  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  let coverImageLocalPathTemp = null;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPathTemp = req.files.coverImage[0].path;
+  }
+  const coverImageLocalPath = coverImageLocalPathTemp;
+
   // upload to cloudinary - cover image if sent, avatar for sure
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  let coverImage;
-  if (coverImageLocalPath) {
-    coverImage = await uploadOnCloudinary(coverImageLocalPath);
-  }
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
   if (!avatar) {
     throw new ApiError(400, "Avatar file is required");
