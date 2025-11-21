@@ -112,8 +112,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
 const loginUser = asyncHandler(async (req, res) => {
   // take from user either username or email and password
-  const { username, email, password } = req.body;
-  if (!username & !email) {
+  console.log(req.body);
+  const { email, username, password } = req.body;
+  if (!(username || email)) {
     throw new ApiError(400, "username or email is required");
   }
   // check if the user exists
@@ -166,8 +167,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   // delete refresh token from db
   await User.findByIdAndUpdate(
     req.user._id,
-    $set,
-    { refreshToken: undefined },
+    { $set: { refreshToken: undefined } },
     { new: true }
   );
 
