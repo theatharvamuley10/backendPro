@@ -76,10 +76,6 @@ userSchema.methods.generateAccessToken = async function () {
   return token;
 };
 
-userSchema.methods.isPasswordCorrect = async function (password) {
-  return await bcrypt.compare(password, this.password);
-};
-
 userSchema.methods.generateRefreshToken = async function () {
   const token = await jwt.sign(
     {
@@ -92,5 +88,5 @@ userSchema.methods.generateRefreshToken = async function () {
   );
   return token;
 };
-userSchema.methods.generateRefreshToken = function () {};
+
 export const User = mongoose.model("User", userSchema);
